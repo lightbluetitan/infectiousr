@@ -1,0 +1,39 @@
+Package: infectiousR
+Type: Package
+Title: Access Infectious and Epidemiological Data via 'disease.sh API'
+Version: 0.1.0
+Maintainer: Renzo Caceres Rossi <arenzocaceresrossi@gmail.com>
+Description: Provides functions to access real-time infectious disease data from the 'disease.sh API',
+    including COVID-19 global, US states, continent, and country statistics, vaccination coverage,
+    influenza-like illness data from Centers for Disease Control and Prevention (CDC), and more. Also includes curated datasets on a variety
+    of infectious diseases such as influenza, measles, dengue, Ebola, tuberculosis, meningitis,
+    AIDS, and others. The package supports epidemiological research and data analysis by
+    combining API access with high-quality historical and survey datasets on infectious diseases.For more details on the
+    'disease.sh API', see <https://disease.sh/>.
+License: GPL-3
+URL: https://github.com/lightbluetitan/infectiousr
+BugReports: https://github.com/lightbluetitan/infectiousr/issues
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 4.1.0)
+Suggests:
+    ggplot2,
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+Imports:
+    utils,
+    httr,
+    jsonlite,
+    lubridate,
+    dplyr
+Authors@R: 
+    person(
+        given = "Renzo",
+        family = "Caceres Rossi",
+        role = c("aut", "cre"),
+        email = "arenzocaceresrossi@gmail.com"
+    )
+RoxygenNote: 7.3.2
+Config/testthat/edition: 3
+VignetteBuilder: knitr
