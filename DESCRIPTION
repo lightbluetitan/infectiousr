@@ -1,7 +1,7 @@
 Package: infectiousR
 Type: Package
 Title: Access Infectious and Epidemiological Data via 'disease.sh API'
-Version: 0.1.1
+Version: 0.1.2
 Maintainer: Renzo Caceres Rossi <arenzocaceresrossi@gmail.com>
 Description: Provides functions to access real-time infectious disease data from the 'disease.sh API',
     including COVID-19 global, US states, continent, and country statistics, vaccination coverage,

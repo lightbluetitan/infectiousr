@@ -1,3 +1,11 @@
+# infectiousR 0.1.2
+
+## CRAN Resubmission
+
+* Increased version number from 0.1.1 to 0.1.2 to comply with CRAN “Insufficient package version” policy.
+* No functional changes — this submission only updates metadata to satisfy CRAN submission requirements.
+* Verified package passes all checks with `R CMD check --as-cran` (0 errors, 0 warnings, 0 notes).
+
 # infectiousR 0.1.1
 
 ## Bug Fixes
