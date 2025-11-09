@@ -1,5 +1,5 @@
 # infectiousR - Access Infectious and Epidemiological Data via 'disease.sh API'
-# Version 0.1.0
+# Version 0.1.1
 # Copyright (C) 2025 Renzo Caceres Rossi
 #
 # This program is free software: you can redistribute it and/or modify
@@ -33,68 +33,108 @@
 #'   \item \code{todayDeaths}: New deaths today.
 #'   \item \code{population}: State population estimate.
 #' }
+#' Returns \code{NULL} if the API is unavailable, the state(s) are not found, or an error occurs.
 #'
 #' @details
 #' This function sends a GET request to the 'disease.sh' API for COVID-19 statistics in one or more U.S. states.
 #' If multiple states are passed, they must be comma-separated and correctly spelled.
 #' The 'updated' field is returned in milliseconds and is converted to a POSIXct datetime.
+#' Requires an active internet connection.
 #'
 #' @examples
 #' \dontrun{
 #' # Retrieve COVID-19 data for California
 #' ca <- get_covid_stats_for_state("California")
+#' if (!is.null(ca)) {
+#'   print(ca)
+#' }
 #'
 #' # Retrieve yesterday's data for New York and Texas
 #' ny_tx <- get_covid_stats_for_state("New York,Texas", yesterday = TRUE)
 #' }
 #'
-#' @note Requires an internet connection.
+#' @note Requires an internet connection. Function fails gracefully if API is unavailable.
 #'
 #' @references API Docs: https://disease.sh/docs/#/COVID-19%3A%20Worldometers/get_v3_covid_19_states__states_
 #'
-#' @importFrom httr GET content
+#' @importFrom httr GET content timeout
 #' @importFrom jsonlite fromJSON
 #' @importFrom lubridate as_datetime
 #' @importFrom utils URLencode
 #' @export
 get_covid_stats_for_state <- function(states, yesterday = FALSE, allowNull = FALSE) {
+  # Validate input
   if (missing(states) || !nzchar(states)) {
     stop("You must provide at least one state name using the 'states' argument.")
   }
 
+  # Prepare URL and query parameters
   base_url <- "https://disease.sh/v3/covid-19/states/"
-  encoded_states <- URLencode(states)
+  encoded_states <- utils::URLencode(states)
   url <- paste0(base_url, encoded_states)
 
   query_params <- list()
   if (yesterday) query_params$yesterday <- "true"
   if (allowNull) query_params$allowNull <- "true"
 
-  response <- httr::GET(url, query = query_params)
+  # Try to make the API request with error handling
+  response <- tryCatch({
+    httr::GET(url, query = query_params, httr::timeout(10))
+  }, error = function(e) {
+    message("Failed to connect to disease.sh API. Please check your internet connection.")
+    message("Error details: ", e$message)
+    return(NULL)
+  })
 
-  if (response$status_code != 200) {
-    warning(sprintf("API request failed with status code %d", response$status_code))
+  # If connection failed, return NULL
+  if (is.null(response)) {
     return(NULL)
   }
 
-  json_text <- httr::content(response, as = "text", encoding = "UTF-8")
-  parsed_data <- jsonlite::fromJSON(json_text, flatten = TRUE)
-
-  if (!is.data.frame(parsed_data)) {
-    parsed_data <- as.data.frame(parsed_data, stringsAsFactors = FALSE)
+  # Check HTTP status code
+  if (response$status_code == 404) {
+    message(sprintf("State(s) '%s' not found. Please check spelling and use full state names.", states))
+    message("Example: 'California' or 'New York,Texas'")
+    return(NULL)
   }
 
-  required_columns <- c("state", "updated", "cases", "todayCases", "deaths", "todayDeaths", "population")
+  if (response$status_code != 200) {
+    message(sprintf("API request returned status code %d. The service may be temporarily unavailable.",
+                    response$status_code))
+    message("Please try again later or check https://disease.sh/")
+    return(NULL)
+  }
 
-  missing_cols <- setdiff(required_columns, names(parsed_data))
-  if (length(missing_cols) > 0) {
-    for (col in missing_cols) {
-      parsed_data[[col]] <- NA
+  # Parse JSON response with error handling
+  result <- tryCatch({
+    json_text <- httr::content(response, as = "text", encoding = "UTF-8")
+    parsed_data <- jsonlite::fromJSON(json_text, flatten = TRUE)
+
+    # Ensure data is a data frame
+    if (!is.data.frame(parsed_data)) {
+      parsed_data <- as.data.frame(parsed_data, stringsAsFactors = FALSE)
     }
-  }
 
-  result <- parsed_data[, required_columns, drop = FALSE]
-  result$updated <- lubridate::as_datetime(result$updated / 1000)
+    # Select relevant columns
+    required_columns <- c("state", "updated", "cases", "todayCases",
+                          "deaths", "todayDeaths", "population")
+    missing_cols <- setdiff(required_columns, names(parsed_data))
+
+    if (length(missing_cols) > 0) {
+      for (col in missing_cols) {
+        parsed_data[[col]] <- NA
+      }
+    }
+
+    result_df <- parsed_data[, required_columns, drop = FALSE]
+    result_df$updated <- lubridate::as_datetime(result_df$updated / 1000)
+
+    return(result_df)
+  }, error = function(e) {
+    message("Failed to parse API response. The data format may have changed.")
+    message("Error details: ", e$message)
+    return(NULL)
+  })
 
   return(result)
 }

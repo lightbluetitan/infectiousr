@@ -24,6 +24,7 @@ A data frame containing the following columns:
   \item \code{todayDeaths}: New deaths today.
   \item \code{population}: State population estimate.
 }
+Returns \code{NULL} if the API is unavailable, the state(s) are not found, or an error occurs.
 }
 \description{
 Retrieves real-time COVID-19 totals for one or more U.S. states from the 'disease.sh' API.
@@ -32,14 +33,18 @@ Retrieves real-time COVID-19 totals for one or more U.S. states from the 'diseas
 This function sends a GET request to the 'disease.sh' API for COVID-19 statistics in one or more U.S. states.
 If multiple states are passed, they must be comma-separated and correctly spelled.
 The 'updated' field is returned in milliseconds and is converted to a POSIXct datetime.
+Requires an active internet connection.
 }
 \note{
-Requires an internet connection.
+Requires an internet connection. Function fails gracefully if API is unavailable.
 }
 \examples{
 \dontrun{
 # Retrieve COVID-19 data for California
 ca <- get_covid_stats_for_state("California")
+if (!is.null(ca)) {
+  print(ca)
+}
 
 # Retrieve yesterday's data for New York and Texas
 ny_tx <- get_covid_stats_for_state("New York,Texas", yesterday = TRUE)

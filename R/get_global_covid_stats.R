@@ -1,5 +1,5 @@
 # infectiousR - Access Infectious and Epidemiological Data via 'disease.sh API'
-# Version 0.1.0
+# Version 0.1.1
 # Copyright (C) 2025 Renzo Caceres Rossi
 #
 # This program is free software: you can redistribute it and/or modify
@@ -23,63 +23,94 @@
 #' \itemize{
 #'   \item \code{updated}: Last updated time (as a human-readable date-time).
 #'   \item \code{cases}: Total confirmed cases worldwide.
-#'   \item \code{todayCases}: Number of new confirmed cases today.
+#'   \item \code{newCases}: Number of new confirmed cases today.
 #'   \item \code{deaths}: Total confirmed deaths worldwide.
 #'   \item \code{recovered}: Total number of recovered patients.
-#'   \item \code{todayRecovered}: Number of recovered patients today.
+#'   \item \code{newRecov}: Number of recovered patients today.
 #'   \item \code{active}: Current active cases.
 #'   \item \code{critical}: Current number of critical cases.
 #'   \item \code{tests}: Total number of tests performed.
-#'   \item \code{population}: Estimated global population.
-#'   \item \code{affectedCountries}: Number of countries affected.
+#'   \item \code{pop}: Estimated global population.
+#'   \item \code{countries}: Number of countries affected.
 #' }
+#' Returns \code{NULL} if the API is unavailable or an error occurs.
 #'
 #' @details
 #' This function sends a GET request to the 'disease.sh' API and parses the returned JSON
 #' into a structured and user-friendly data frame. The timestamp is converted to a readable
 #' date-time format (in UTC).
+#' Requires an active internet connection.
 #'
 #' @examples
 #' \dontrun{
 #' global_stats <- get_global_covid_stats()
-#' print(global_stats)
+#' if (!is.null(global_stats)) {
+#'   print(global_stats)
+#' }
 #' }
 #'
-#' @note An internet connection is required to use this function.
+#' @note An internet connection is required to use this function. Function fails gracefully if API is unavailable.
 #'
 #' @references API Docs: https://disease.sh/docs/#/COVID-19%3A%20Worldometers/get_v3_covid_19_all
 #'
-#' @importFrom httr GET
+#' @importFrom httr GET content timeout
 #' @importFrom jsonlite fromJSON
-#' @importFrom dplyr select
 #' @importFrom lubridate as_datetime
 #' @export
 get_global_covid_stats <- function() {
   url <- "https://disease.sh/v3/covid-19/all"
-  response <- httr::GET(url)
 
-  if (response$status_code != 200) {
-    warning(paste("Error: Received status code", response$status_code))
+  # Try to make the API request with error handling
+  response <- tryCatch({
+    httr::GET(url, httr::timeout(10))
+  }, error = function(e) {
+    message("Failed to connect to disease.sh API. Please check your internet connection.")
+    message("Error details: ", e$message)
+    return(NULL)
+  })
+
+  # If connection failed, return NULL
+  if (is.null(response)) {
     return(NULL)
   }
 
-  content_raw <- httr::content(response, as = "text", encoding = "UTF-8")
-  data <- jsonlite::fromJSON(content_raw)
+  # Check HTTP status code
+  if (response$status_code != 200) {
+    message(sprintf("API request returned status code %d. The service may be temporarily unavailable.",
+                    response$status_code))
+    message("Please try again later or check https://disease.sh/")
+    return(NULL)
+  }
 
-  df <- data.frame(
-    updated = as.Date(lubridate::as_datetime(data$updated / 1000)),
-    cases = data$cases,
-    newCases = data$todayCases,
-    deaths = data$deaths,
-    recovered = data$recovered,
-    newRecov = data$todayRecovered,
-    active = data$active,
-    critical = data$critical,
-    tests = data$tests,
-    pop = data$population,
-    countries = data$affectedCountries,
-    stringsAsFactors = FALSE
-  )
+  # Parse JSON response with error handling
+  result <- tryCatch({
+    content_raw <- httr::content(response, as = "text", encoding = "UTF-8")
+    data <- jsonlite::fromJSON(content_raw)
 
-  return(df)
+    # Build data frame with error handling for missing fields
+    df <- data.frame(
+      updated = as.Date(lubridate::as_datetime(
+        ifelse(is.null(data$updated), NA, data$updated / 1000)
+      )),
+      cases = ifelse(is.null(data$cases), NA, data$cases),
+      newCases = ifelse(is.null(data$todayCases), NA, data$todayCases),
+      deaths = ifelse(is.null(data$deaths), NA, data$deaths),
+      recovered = ifelse(is.null(data$recovered), NA, data$recovered),
+      newRecov = ifelse(is.null(data$todayRecovered), NA, data$todayRecovered),
+      active = ifelse(is.null(data$active), NA, data$active),
+      critical = ifelse(is.null(data$critical), NA, data$critical),
+      tests = ifelse(is.null(data$tests), NA, data$tests),
+      pop = ifelse(is.null(data$population), NA, data$population),
+      countries = ifelse(is.null(data$affectedCountries), NA, data$affectedCountries),
+      stringsAsFactors = FALSE
+    )
+
+    return(df)
+  }, error = function(e) {
+    message("Failed to parse API response. The data format may have changed.")
+    message("Error details: ", e$message)
+    return(NULL)
+  })
+
+  return(result)
 }

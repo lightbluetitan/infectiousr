@@ -1,6 +1,9 @@
-pandoc: '3.4'
-pkgdown: 2.1.2
+pandoc: 3.6.3
+pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   infectiousR_vignette: infectiousR_vignette.html
-last_built: 2025-06-09T07:13Z
+last_built: 2025-11-09T03:20Z
+urls:
+  reference: https://lightbluetitan.github.io/infectiousr/reference
+  article: https://lightbluetitan.github.io/infectiousr/articles

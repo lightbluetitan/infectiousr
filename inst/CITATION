@@ -3,6 +3,6 @@ bibentry(
   title = "infectiousR: Access Infectious and Epidemiological Data via 'disease.sh API'",
   author = person(given = "Renzo", family = "Caceres Rossi"),
   year = 2025,
-  note = "R package version 0.1.0",
+  note = "R package version 0.1.1",
   url = "https://github.com/lightbluetitan/infectiousr"
 )

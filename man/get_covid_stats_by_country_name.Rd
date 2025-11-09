@@ -34,23 +34,28 @@ A data frame with the following columns:
   \item \code{recovered}: Total recoveries.
   \item \code{population}: Estimated population.
 }
+Returns \code{NULL} if the API is unavailable, the country is not found, or an error occurs.
 }
 \description{
 Retrieves COVID-19 totals for a given country using the 'disease.sh' API.
 }
 \details{
 This function accesses COVID-19 data for a specific country based on its name or ISO code.
+Requires an active internet connection.
 }
 \note{
-Requires internet connection.
+Requires internet connection. Function fails gracefully if API is unavailable.
 }
 \examples{
 \dontrun{
 # Get data for Brazil
-get_covid_stats_by_country_name("Brazil")
+brazil_data <- get_covid_stats_by_country_name("Brazil")
+if (!is.null(brazil_data)) {
+  print(brazil_data)
+}
 
 # Get data for the USA using ISO2 code
-get_covid_stats_by_country_name("US", yesterday = TRUE)
+usa_data <- get_covid_stats_by_country_name("US", yesterday = TRUE)
 }
 
 }

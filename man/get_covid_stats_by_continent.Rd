@@ -31,6 +31,7 @@ A data frame containing:
   \item \code{todayDeaths}: New deaths today.
   \item \code{population}: Continent population estimate.
 }
+Returns \code{NULL} if the API is unavailable or an error occurs.
 }
 \description{
 Retrieves real-time COVID-19 totals for all continents from the 'disease.sh' API.
@@ -38,17 +39,21 @@ Retrieves real-time COVID-19 totals for all continents from the 'disease.sh' API
 \details{
 This function retrieves COVID-19 summary data for each continent.
 You may specify whether to get data from today, yesterday, or two days ago.
+Requires an active internet connection.
 }
 \note{
-Requires internet access.
+Requires internet access. Function fails gracefully if API is unavailable.
 }
 \examples{
 \dontrun{
 # Get current COVID-19 stats for all continents
-get_covid_stats_by_continent()
+stats <- get_covid_stats_by_continent()
+if (!is.null(stats)) {
+  print(stats)
+}
 
 # Get yesterday's data sorted by number of cases
-get_covid_stats_by_continent(yesterday = TRUE, sort = "cases")
+stats_yesterday <- get_covid_stats_by_continent(yesterday = TRUE, sort = "cases")
 }
 
 }

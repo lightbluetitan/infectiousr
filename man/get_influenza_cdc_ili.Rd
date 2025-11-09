@@ -19,19 +19,25 @@ A list containing:
     \item \code{totalPatients}: Total patients.
   }
 }
+Returns \code{NULL} if the API is unavailable or an error occurs.
 }
 \description{
 Retrieves ILI data for the 2019 and 2020 influenza outbreaks from the US CDC.
 }
 \details{
 This endpoint provides historical data for flu-like symptoms reported in the United States, sourced from the CDC ILINet.
+Requires an active internet connection.
 }
 \note{
-Requires internet connection.
+Requires internet connection. Function fails gracefully if API is unavailable.
 }
 \examples{
 \dontrun{
-get_influenza_cdc_ili()
+ili_data <- get_influenza_cdc_ili()
+if (!is.null(ili_data)) {
+  print(ili_data$updated)
+  head(ili_data$data)
+}
 }
 
 }

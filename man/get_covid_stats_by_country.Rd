@@ -31,6 +31,7 @@ A data frame containing:
   \item \code{todayDeaths}: New deaths today.
   \item \code{population}: Population estimate for each country.
 }
+Returns \code{NULL} if the API is unavailable or an error occurs.
 }
 \description{
 Retrieves real-time COVID-19 totals for all countries from the 'disease.sh' API.
@@ -38,17 +39,21 @@ Retrieves real-time COVID-19 totals for all countries from the 'disease.sh' API.
 \details{
 This function fetches COVID-19 summary statistics for each country.
 Useful for global surveillance or international comparisons.
+Requires an active internet connection.
 }
 \note{
-Requires internet access.
+Requires internet access. Function fails gracefully if API is unavailable.
 }
 \examples{
 \dontrun{
 # Get real-time COVID-19 data for all countries
-get_covid_stats_by_country()
+all_countries <- get_covid_stats_by_country()
+if (!is.null(all_countries)) {
+  head(all_countries)
+}
 
 # Get sorted data by number of deaths reported yesterday
-get_covid_stats_by_country(yesterday = TRUE, sort = "deaths")
+yesterday_deaths <- get_covid_stats_by_country(yesterday = TRUE, sort = "deaths")
 }
 
 }

@@ -17,6 +17,7 @@ A data frame with the following columns:
   \item \code{active}: Current active cases.
   \item \code{population}: Estimated state population.
 }
+Returns \code{NULL} if the API is unavailable or an error occurs.
 }
 \description{
 Retrieves real-time COVID-19 totals from the 'disease.sh' API for all 50 U.S. states,
@@ -27,14 +28,17 @@ as well as U.S. territories (e.g., Puerto Rico, Guam), special jurisdictions
 This function sends a GET request to the 'disease.sh' API endpoint for US state-level COVID-19
 statistics and parses the response into a structured data frame.
 The timestamp is converted to a readable date-time format (in UTC).
+Requires an active internet connection.
 }
 \note{
-An internet connection is required to use this function.
+An internet connection is required to use this function. Function fails gracefully if API is unavailable.
 }
 \examples{
 \dontrun{
 us_states_stats <- get_us_states_covid_stats()
-head(us_states_stats)
+if (!is.null(us_states_stats)) {
+  head(us_states_stats)
+}
 }
 
 }

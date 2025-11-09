@@ -11,16 +11,17 @@ A data frame with the following columns:
 \itemize{
   \item \code{updated}: Last updated time (as a human-readable date-time).
   \item \code{cases}: Total confirmed cases worldwide.
-  \item \code{todayCases}: Number of new confirmed cases today.
+  \item \code{newCases}: Number of new confirmed cases today.
   \item \code{deaths}: Total confirmed deaths worldwide.
   \item \code{recovered}: Total number of recovered patients.
-  \item \code{todayRecovered}: Number of recovered patients today.
+  \item \code{newRecov}: Number of recovered patients today.
   \item \code{active}: Current active cases.
   \item \code{critical}: Current number of critical cases.
   \item \code{tests}: Total number of tests performed.
-  \item \code{population}: Estimated global population.
-  \item \code{affectedCountries}: Number of countries affected.
+  \item \code{pop}: Estimated global population.
+  \item \code{countries}: Number of countries affected.
 }
+Returns \code{NULL} if the API is unavailable or an error occurs.
 }
 \description{
 Retrieves real-time global statistics on COVID-19 from the 'disease.sh' API.
@@ -29,14 +30,17 @@ Retrieves real-time global statistics on COVID-19 from the 'disease.sh' API.
 This function sends a GET request to the 'disease.sh' API and parses the returned JSON
 into a structured and user-friendly data frame. The timestamp is converted to a readable
 date-time format (in UTC).
+Requires an active internet connection.
 }
 \note{
-An internet connection is required to use this function.
+An internet connection is required to use this function. Function fails gracefully if API is unavailable.
 }
 \examples{
 \dontrun{
 global_stats <- get_global_covid_stats()
-print(global_stats)
+if (!is.null(global_stats)) {
+  print(global_stats)
+}
 }
 
 }
